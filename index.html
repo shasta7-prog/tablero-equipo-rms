@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="300">
+<meta name="robots" content="noindex">
+<title>Tablero del Equipo — RMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --plano: #101113; --carta: #1b1d21; --carta2: #22252b;
+    --tinta: #ffffff; --tinta2: #c3c2b7; --muted: #898781;
+    --borde: rgba(255,255,255,0.08);
+    --ok: #0ca30c; --warn: #fab219; --bad: #d03b3b;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.28);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--plano); color: var(--tinta);
+    font-family: 'Nunito', system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.45; padding-bottom: 48px;
+  }
+  .envoltura { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header.top { padding: 28px 0 6px; }
+  header.top h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.01em; }
+  header.top .act { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  h2 { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--tinta2); margin: 34px 0 12px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+  .kpi { background: var(--carta); border: 1px solid var(--borde); border-radius: 18px; padding: 16px 18px; box-shadow: var(--sombra); }
+  .kpi .n { font-size: 34px; font-weight: 800; line-height: 1.1; }
+  .kpi .l { color: var(--tinta2); font-size: 14px; margin-top: 2px; }
+  .kpi.verde .n { color: var(--ok); } .kpi.rojo .n { color: var(--bad); }
+
+  .grid-aux { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .aux { background: var(--carta); border: 1px solid var(--borde); border-radius: 20px; padding: 18px; box-shadow: var(--sombra);
+         border-top: 3px solid var(--c); transition: transform .18s ease, background .18s ease; }
+  .aux:hover { transform: translateY(-2px); background: var(--carta2); }
+  .aux header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--c); color: #fff; font-weight: 800;
+            display: inline-flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .avatar.mini { width: 30px; height: 30px; font-size: 12px; }
+  .aux h3 { margin: 0; font-size: 19px; font-weight: 800; }
+  .aux .sub { color: var(--muted); font-size: 13px; }
+  .semaforo { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--carta2); border: 1px solid var(--borde); }
+  .chip.ok { color: var(--ok); } .chip.warn { color: var(--warn); } .chip.bad { color: var(--bad); }
+  .chip.apagado { color: var(--muted); }
+  .cierres { display: flex; gap: 18px; color: var(--tinta2); font-size: 14px; margin: 12px 2px 8px; }
+  .cierres b { color: var(--tinta); }
+  .barra { height: 10px; border-radius: 999px; background: var(--carta2); overflow: hidden; }
+  .barra-fill { height: 100%; width: 0; border-radius: 999px; background: var(--c); transition: width 1s cubic-bezier(.2,.7,.3,1); }
+  .barra-txt { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+
+  ol.ranking { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  ol.ranking li { display: flex; align-items: center; gap: 10px; background: var(--carta); border: 1px solid var(--borde);
+                  border-radius: 14px; padding: 10px 14px; }
+  ol.ranking li.podio { background: var(--carta2); }
+  .pos { width: 26px; text-align: center; font-size: 18px; }
+  .rk-nombre { font-weight: 800; flex: 1; }
+  .rk-num { color: var(--tinta2); font-size: 14px; }
+  .evid { color: var(--ok); font-size: 12.5px; font-weight: 700; }
+
+  ul.rescatar, ul.recientes, ul.lista-simple { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  ul.rescatar li { display: flex; align-items: center; gap: 10px; background: var(--carta); border: 1px solid var(--borde); border-radius: 14px; padding: 10px 14px; }
+  .punto { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .resc-titulo { flex: 1; font-size: 14.5px; }
+  .resc-quien { color: var(--tinta2); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .resc-dias { color: var(--bad); font-size: 13px; font-weight: 800; white-space: nowrap; }
+  ul.recientes li { background: var(--carta); border: 1px solid var(--borde); border-radius: 14px; padding: 10px 14px; font-size: 14.5px; }
+  .rec-meta { color: var(--muted); font-size: 13px; margin-left: 6px; }
+  .nota { color: var(--muted); font-size: 13.5px; }
+  .vacio { color: var(--muted); font-style: italic; background: var(--carta); border: 1px dashed var(--borde); border-radius: 14px; padding: 14px; }
+  .celebra { color: var(--ok); font-weight: 800; }
+  section.discreta { opacity: .75; }
+  ul.lista-simple li { color: var(--tinta2); font-size: 13.5px; }
+  footer { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 44px; }
+
+  @media (min-width: 640px) {
+    .kpis { grid-template-columns: repeat(4, 1fr); }
+    .grid-aux { grid-template-columns: repeat(2, 1fr); }
+    header.top h1 { font-size: 30px; }
+  }
+  @media (min-width: 980px) { .grid-aux { grid-template-columns: repeat(3, 1fr); } }
+  @media (prefers-reduced-motion: reduce) { .barra-fill { transition: none; } .aux { transition: none; } }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <header class="top">
+    <h1>Tablero del Equipo — RMS</h1>
+    <div class="act">Actualizado: viernes, 10 de julio de 2026, 12:38 p.m.</div>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">73</div><div class="l">Tareas activas</div></div>
+    <div class="kpi verde"><div class="n">21</div><div class="l">Cerradas esta semana</div></div>
+    <div class="kpi verde"><div class="n">62</div><div class="l">Cerradas este mes</div></div>
+    <div class="kpi rojo"><div class="n">18</div><div class="l">Por rescatar</div></div>
+  </div>
+
+  <h2>El equipo</h2>
+  <div class="grid-aux">
+    <article class="aux" style="--c:#3987e5">
+    <header><span class="avatar">P</span>
+      <div><h3>Pablo</h3><span class="sub">26 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 16 al día</span>
+      <span class="chip warn">🟡 1 por vencer</span>
+      <span class="chip bad">🔴 9 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>7</b></span><span>Mes: <b>21</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 64%"><div class="barra-fill" data-w="64"></div></div>
+    <div class="barra-txt">21 de 33 del mes</div>
+  </article>
+<article class="aux" style="--c:#d55181">
+    <header><span class="avatar">D</span>
+      <div><h3>Daniel</h3><span class="sub">13 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 11 al día</span>
+      <span class="chip apagado">🟡 0 por vencer</span>
+      <span class="chip bad">🔴 2 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>7</b></span><span>Mes: <b>11</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 61%"><div class="barra-fill" data-w="61"></div></div>
+    <div class="barra-txt">11 de 18 del mes</div>
+  </article>
+<article class="aux" style="--c:#199e70">
+    <header><span class="avatar">F</span>
+      <div><h3>Fer</h3><span class="sub">11 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 9 al día</span>
+      <span class="chip apagado">🟡 0 por vencer</span>
+      <span class="chip bad">🔴 2 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>1</b></span><span>Mes: <b>11</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 50%"><div class="barra-fill" data-w="50"></div></div>
+    <div class="barra-txt">11 de 22 del mes</div>
+  </article>
+<article class="aux" style="--c:#c98500">
+    <header><span class="avatar">J</span>
+      <div><h3>Junior</h3><span class="sub">15 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 7 al día</span>
+      <span class="chip warn">🟡 4 por vencer</span>
+      <span class="chip bad">🔴 4 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>1</b></span><span>Mes: <b>2</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 14%"><div class="barra-fill" data-w="14"></div></div>
+    <div class="barra-txt">2 de 14 del mes</div>
+  </article>
+<article class="aux" style="--c:#008300">
+    <header><span class="avatar">A</span>
+      <div><h3>Azael</h3><span class="sub">3 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 1 al día</span>
+      <span class="chip warn">🟡 1 por vencer</span>
+      <span class="chip bad">🔴 1 vencida</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>0</b></span><span>Mes: <b>5</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 100%"><div class="barra-fill" data-w="100"></div></div>
+    <div class="barra-txt">5 de 5 del mes</div>
+  </article>
+<article class="aux" style="--c:#e66767">
+    <header><span class="avatar">O</span>
+      <div><h3>Osvaldo</h3><span class="sub">3 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 3 al día</span>
+      <span class="chip apagado">🟡 0 por vencer</span>
+      <span class="chip apagado">🔴 0 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>3</b></span><span>Mes: <b>5</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 71%"><div class="barra-fill" data-w="71"></div></div>
+    <div class="barra-txt">5 de 7 del mes</div>
+  </article>
+<article class="aux" style="--c:#9085e9">
+    <header><span class="avatar">LJ</span>
+      <div><h3>Luis Javier</h3><span class="sub">0 activas</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 0 al día</span>
+      <span class="chip apagado">🟡 0 por vencer</span>
+      <span class="chip apagado">🔴 0 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>1</b></span><span>Mes: <b>3</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 100%"><div class="barra-fill" data-w="100"></div></div>
+    <div class="barra-txt">3 de 3 del mes</div>
+  </article>
+<article class="aux" style="--c:#d95926">
+    <header><span class="avatar">Y</span>
+      <div><h3>Yuneri</h3><span class="sub">1 activa</span></div>
+    </header>
+    <div class="semaforo">
+      <span class="chip ok">🟢 1 al día</span>
+      <span class="chip apagado">🟡 0 por vencer</span>
+      <span class="chip apagado">🔴 0 vencidas</span>
+    </div>
+    <div class="cierres"><span>✅ Semana: <b>1</b></span><span>Mes: <b>3</b></span></div>
+    <div class="barra" role="img" aria-label="Avance del mes: 100%"><div class="barra-fill" data-w="100"></div></div>
+    <div class="barra-txt">3 de 3 del mes</div>
+  </article>
+  </div>
+
+  <h2>Ranking del mes 🏆</h2>
+  <ol class="ranking"><li class="podio" style="--c:#3987e5">
+    <span class="pos">🥇</span><span class="avatar mini">P</span>
+    <span class="rk-nombre">Pablo</span>
+    <span class="rk-num">21 cierres</span>
+  </li>
+<li class="podio" style="--c:#d55181">
+    <span class="pos">🥈</span><span class="avatar mini">D</span>
+    <span class="rk-nombre">Daniel</span>
+    <span class="rk-num">11 cierres</span>
+  </li>
+<li class="podio" style="--c:#199e70">
+    <span class="pos">🥉</span><span class="avatar mini">F</span>
+    <span class="rk-nombre">Fer</span>
+    <span class="rk-num">11 cierres</span>
+  </li>
+<li class="" style="--c:#008300">
+    <span class="pos"></span><span class="avatar mini">A</span>
+    <span class="rk-nombre">Azael</span>
+    <span class="rk-num">5 cierres</span>
+  </li>
+<li class="" style="--c:#e66767">
+    <span class="pos"></span><span class="avatar mini">O</span>
+    <span class="rk-nombre">Osvaldo</span>
+    <span class="rk-num">5 cierres</span>
+  </li>
+<li class="" style="--c:#9085e9">
+    <span class="pos"></span><span class="avatar mini">LJ</span>
+    <span class="rk-nombre">Luis Javier</span>
+    <span class="rk-num">3 cierres</span>
+  </li>
+<li class="" style="--c:#d95926">
+    <span class="pos"></span><span class="avatar mini">Y</span>
+    <span class="rk-nombre">Yuneri</span>
+    <span class="rk-num">3 cierres</span>
+  </li>
+<li class="" style="--c:#c98500">
+    <span class="pos"></span><span class="avatar mini">J</span>
+    <span class="rk-nombre">Junior</span>
+    <span class="rk-num">2 cierres</span>
+  </li></ol>
+       <p class="nota">Cuentan los cierres del mes; el 📎 marca los que ya tienen evidencia validada.</p>
+
+  <h2>Pendientes por rescatar</h2>
+  <p class="nota">Estas tareas ya pasaron su plazo. Un empujón entre todos y salen 🤝</p>
+       <ul class="rescatar"><li>
+      <span class="punto" style="background:#c98500"></span>
+      <span class="resc-titulo">Cable y tripiés (tercero)</span>
+      <span class="resc-quien">Junior</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#d55181"></span>
+      <span class="resc-titulo">Gasolina (padrón de proveedores)</span>
+      <span class="resc-quien">Daniel</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#d55181"></span>
+      <span class="resc-titulo">Moneda Hidalgo (Vbo OIC)</span>
+      <span class="resc-quien">Daniel</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#c98500"></span>
+      <span class="resc-titulo">Bafle/mezcladora (Capítulo 5000)</span>
+      <span class="resc-quien">Junior</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#c98500"></span>
+      <span class="resc-titulo">Cable y tripiés (tercero)</span>
+      <span class="resc-quien">Junior</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#199e70"></span>
+      <span class="resc-titulo">3 monitores proveedor (Vbo DGIT)</span>
+      <span class="resc-quien">Fer</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#c98500"></span>
+      <span class="resc-titulo">Fotocopiado (partida sin disponibilidad)</span>
+      <span class="resc-quien">Junior</span>
+      <span class="resc-dias">8 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#199e70"></span>
+      <span class="resc-titulo">Preparar y entregar requerimientos de compra consolidada 2026 a DGCG</span>
+      <span class="resc-quien">Fer</span>
+      <span class="resc-dias">3 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#3987e5"></span>
+      <span class="resc-titulo">Autorizar acceso de tercero para tomas de medidas de prótesis canina</span>
+      <span class="resc-quien">Pablo</span>
+      <span class="resc-dias">3 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#3987e5"></span>
+      <span class="resc-titulo">Autorizar y comunicar acceso al Laboratorio de Química para alumnas de…</span>
+      <span class="resc-quien">Pablo</span>
+      <span class="resc-dias">3 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#3987e5"></span>
+      <span class="resc-titulo">Coordinar acceso al Laboratorio de Química para alumnas de Nanotecnología</span>
+      <span class="resc-quien">Pablo</span>
+      <span class="resc-dias">3 días</span>
+    </li>
+<li>
+      <span class="punto" style="background:#3987e5"></span>
+      <span class="resc-titulo">Coordinar acceso de tercero para toma de medidas de prótesis</span>
+      <span class="resc-quien">Pablo</span>
+      <span class="resc-dias">3 días</span>
+    </li></ul><p class="nota">…y 6 más. Vamos por ellas 💪</p>
+
+  <h2>Cerradas recientes</h2>
+  <ul class="recientes"><li>✅ <span class="rec-titulo">Revisar y archivar reporte de contrataciones federales de junio 2026</span>
+      <span class="rec-meta">Osvaldo · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Actualizar hoja de actividades del departamento</span>
+      <span class="rec-meta">Junior · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Actualizar hoja de actividades del departamento</span>
+      <span class="rec-meta">Yuneri · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Actualizar hoja de actividades del departamento</span>
+      <span class="rec-meta">Fer · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Actualizar hoja de actividades del departamento</span>
+      <span class="rec-meta">Osvaldo · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Actualizar hoja de actividades del departamento</span>
+      <span class="rec-meta">Daniel · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Integrar documentación al expediente de servicios profesionales CLE y continuar…</span>
+      <span class="rec-meta">Daniel · 10 jul</span></li>
+<li>✅ <span class="rec-titulo">Limpieza del espacio e insumos en sanitarios de la Sala de Usos Múltiples</span>
+      <span class="rec-meta">Pablo · 10 jul</span></li></ul>
+  
+  <section class="discreta">
+    <h2>En transición</h2>
+    <p class="nota">Tareas que están cambiando de manos o esperando reparto — no son de nadie todavía.</p>
+    <ul class="lista-simple">
+      
+      <li>• 1 tarea en espera de reparto</li>
+    </ul>
+  </section>
+
+  <footer>Tablero del Equipo · Recursos Materiales y Servicios · se actualiza solo cada 15 minutos</footer>
+</div>
+<script>
+  addEventListener('load', () => {
+    document.querySelectorAll('.barra-fill').forEach((b, i) => {
+      setTimeout(() => { b.style.width = b.dataset.w + '%'; }, 150 + i * 90);
+    });
+  });
+</script>
+</body>
+</html>
